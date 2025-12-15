@@ -1,0 +1,45 @@
+WITH fuel AS (
+    SELECT 
+        truck_id, 
+        SUM(total_cost) AS fuel_cost
+    FROM fuel_purchases
+    WHERE purchase_date BETWEEN '2023-01-01' AND '2023-12-31'
+    GROUP BY truck_id
+),
+maint AS (
+    SELECT 
+        truck_id, 
+        SUM(total_cost) AS maintenance_cost
+    FROM maintenance_records
+    WHERE maintenance_date BETWEEN '2023-01-01' AND '2023-12-31'
+    GROUP BY truck_id
+),
+rev AS (
+    SELECT
+        truck_id,
+        SUM(total_revenue) AS revenue_2023
+    FROM truck_utilization_metrics
+    WHERE month BETWEEN '2023-01-01' AND '2023-12-31'
+    GROUP BY truck_id
+)
+SELECT
+    COALESCE(f.truck_id, m.truck_id, r.truck_id) AS truck_id,
+    
+    -- Revenue
+    COALESCE(r.revenue_2023, 0) AS revenue_2023,
+    
+    -- Costs
+    COALESCE(f.fuel_cost, 0) AS fuel_cost_2023,
+    COALESCE(m.maintenance_cost, 0) AS maintenance_cost_2023,
+    COALESCE(f.fuel_cost, 0) + COALESCE(m.maintenance_cost, 0) AS total_cost_2023,
+    
+    -- Profit
+    COALESCE(r.revenue_2023, 0)
+        - (COALESCE(f.fuel_cost, 0) + COALESCE(m.maintenance_cost, 0)) 
+        AS profit_2023
+FROM fuel f
+FULL OUTER JOIN maint m
+    ON f.truck_id = m.truck_id
+FULL OUTER JOIN rev r
+    ON COALESCE(f.truck_id, m.truck_id) = r.truck_id
+ORDER BY truck_id;
