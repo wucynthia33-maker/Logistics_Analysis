@@ -1,0 +1,46 @@
+SELECT 
+    d.trip_id,
+
+    -- Time delayed (based on pickup scheduled vs delivery actual)
+    CASE 
+        WHEN DATEDIFF('minute', 
+                      MAX(CASE WHEN event_type='Delivery' THEN scheduled_datetime END),
+                      MAX(CASE WHEN event_type='Delivery' THEN actual_datetime END)
+                     ) > 0 
+        THEN DATEDIFF('minute', 
+                      MAX(CASE WHEN event_type='Delivery' THEN scheduled_datetime END),
+                      MAX(CASE WHEN event_type='Delivery' THEN actual_datetime END)
+                     )
+        ELSE 0 
+    END AS delivery_delayed_minutes,
+
+    -- Season (based on delivery date)
+    CASE
+        WHEN TO_CHAR(MAX(CASE WHEN d.event_type='Delivery' THEN d.actual_datetime END), 'MM-DD')
+             BETWEEN '03-01' AND '05-31' THEN 'Spring'
+        WHEN TO_CHAR(MAX(CASE WHEN d.event_type='Delivery' THEN d.actual_datetime END), 'MM-DD')
+             BETWEEN '06-01' AND '08-31' THEN 'Summer'
+        WHEN TO_CHAR(MAX(CASE WHEN d.event_type='Delivery' THEN d.actual_datetime END), 'MM-DD')
+             BETWEEN '09-01' AND '11-30' THEN 'Fall'
+        ELSE 'Winter'
+    END AS season,
+
+    -- Trip metrics
+    t.actual_distance_miles,
+    t.actual_duration_hours,
+
+    -- Route (Pickup -> Delivery)
+    CONCAT(
+        MAX(CASE WHEN d.event_type = 'Pickup' THEN d.location_state END),
+        ' -> ',
+        MAX(CASE WHEN d.event_type = 'Delivery' THEN d.location_state END)
+    ) AS route
+
+FROM delivery_events d
+LEFT JOIN Trips t 
+    ON d.trip_id = t.trip_id
+GROUP BY 
+    d.trip_id,
+    t.actual_distance_miles,
+    t.actual_duration_hours
+ORDER by d.trip_id;
