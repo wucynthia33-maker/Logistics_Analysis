@@ -6,28 +6,26 @@ This project analyzes a shipping company’s data warehouse to uncover data-driv
 
 The analysis focuses on answering key operational and financial questions, including:
 
-Delivery performance and delays
+* Delivery performance and delays
 
-Demand stability and seasonality
+* Demand stability and seasonality
 
-Seasonal impact on driving speed (MPH)
+* Seasonal impact on driving speed (MPH)
 
-Identification of high-volume and high-impact routes
+* Identification of high-volume and high-impact routes
 
-Fuel and maintenance cost trends
+* Fuel and maintenance cost trends
 
-Revenue and profit performance over time
+* Revenue and profit performance over time
 
-**Data Source
-**
+**Data Source**
 The dataset used in this project is sourced from Kaggle:
 
 Yogape Rodriguez (2025).
 Synthetic Logistics Operations Database (2022–2024).
 Kaggle Dataset.
 
-**Repository Contents
-**
+**Repository Contents**
 This repository includes:
 
 Snowflake SQL scripts used for data transformation and modeling
